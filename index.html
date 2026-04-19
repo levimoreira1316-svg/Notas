@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    transition: background 0.5s;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* overlay escuro */
+body::before {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: -1;
+}
+
+/* container */
+.container {
+    padding: 15px;
+}
+
+/* topo */
+header {
+    text-align: center;
+    color: white;
+}
+
+/* botão voltar */
+#btnVoltar {
+    display: none;
+    margin: 10px 0;
+    width: 100%;
+    background: #1e3a8a;
+    color: white;
+}
+
+/* MENU */
+#menu {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 40px;
+}
+
+button {
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background: #facc15;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* AGENDA */
+#agenda {
+    display: none;
+}
+
+.linha {
+    display: flex;
+    background: rgba(255, 249, 196, 0.9);
+    border-bottom: 1px solid #ccc;
+}
+
+.hora {
+    width: 70px;
+    padding: 10px;
+    border-right: 1px solid #ccc;
+}
+
+.texto {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    background: transparent;
+}
+
+/* NOTAS */
+#notas {
+    display: none;
+}
+
+#topoNotas {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#topoNotas button {
+    flex: 1;
+}
+
+#listaNotas {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.notaItem {
+    background: rgba(224, 242, 254, 0.9);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+#editorNota {
+    width: 100%;
+    height: 250px;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    background: rgba(255, 249, 196, 0.9);
+}
+
+/* RESPONSIVO */
+@media (min-width: 600px) {
+    .container {
+        max-width: 500px;
+        margin: auto;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+    <h2>📒 Minha Agenda</h2>
+</header>
+
+<button id="btnVoltar" onclick="voltarMenu()">⬅ Voltar</button>
+
+<!-- MENU -->
+<div id="menu">
+    <button onclick="abrirAgenda()">📅 Horas Diárias</button>
+    <button onclick="abrirNotas()">📝 Notas</button>
+</div>
+
+<!-- AGENDA -->
+<div id="agenda"></div>
+
+<!-- NOTAS -->
+<div id="notas">
+
+    <div id="topoNotas">
+        <button onclick="salvarNota()">💾 Salvar</button>
+        <button onclick="novaNota()">➕ Nova</button>
+    </div>
+
+    <div id="listaNotas"></div>
+
+    <textarea id="editorNota" placeholder="Escreva sua nota..."></textarea>
+</div>
+
+</div>
+
+<script>
+
+// ===== FUNDOS =====
+function fundoMenu() {
+    document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f')";
+}
+
+function fundoAgenda() {
+    document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1506784983877-45594efa4cbe')";
+}
+
+function fundoNotas() {
+    document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1517842645767-c639042777db')";
+}
+
+// ===== VOLTAR =====
+function voltarMenu() {
+    document.getElementById("menu").style.display = "flex";
+    document.getElementById("agenda").style.display = "none";
+    document.getElementById("notas").style.display = "none";
+    document.getElementById("btnVoltar").style.display = "none";
+    fundoMenu();
+}
+
+// ===== AGENDA =====
+function abrirAgenda() {
+    document.getElementById("menu").style.display = "none";
+    document.getElementById("agenda").style.display = "block";
+    document.getElementById("btnVoltar").style.display = "block";
+    fundoAgenda();
+    gerarAgenda();
+}
+
+function gerarAgenda() {
+    const agenda = document.getElementById("agenda");
+    agenda.innerHTML = "";
+
+    for (let i = 0; i < 24; i++) {
+        let hora = String(i).padStart(2, '0') + ":00";
+
+        let linha = document.createElement("div");
+        linha.className = "linha";
+
+        linha.innerHTML = `
+            <div class="hora">${hora}</div>
+            <input class="texto" placeholder="Escreva...">
+        `;
+
+        agenda.appendChild(linha);
+    }
+}
+
+// ===== NOTAS =====
+function abrirNotas() {
+    document.getElementById("menu").style.display = "none";
+    document.getElementById("notas").style.display = "block";
+    document.getElementById("btnVoltar").style.display = "block";
+    fundoNotas();
+    carregarNotas();
+}
+
+function salvarNota() {
+    let nome = prompt("Nome da nota:");
+    if (!nome) return;
+
+    let conteudo = document.getElementById("editorNota").value;
+
+    localStorage.setItem(nome, conteudo);
+    carregarNotas();
+}
+
+function carregarNotas() {
+    const lista = document.getElementById("listaNotas");
+    lista.innerHTML = "";
+
+    for (let i = 0; i < localStorage.length; i++) {
+        let nome = localStorage.key(i);
+
+        let div = document.createElement("div");
+        div.className = "notaItem";
+        div.innerText = nome;
+
+        div.onclick = () => {
+            document.getElementById("editorNota").value = localStorage.getItem(nome);
+        };
+
+        lista.appendChild(div);
+    }
+}
+
+function novaNota() {
+    document.getElementById("editorNota").value = "";
+}
+
+// carregar fundo inicial
+fundoMenu();
+
+</script>
+
+</body>
+</html>
