@@ -14,6 +14,7 @@ body {
     background-attachment: fixed;
 }
 
+/* overlay */
 body::before {
     content: "";
     position: fixed;
@@ -41,6 +42,7 @@ button {
     border-radius: 10px;
     background: #facc15;
     font-weight: bold;
+    font-size: 16px;
 }
 
 /* MENU */
@@ -94,6 +96,7 @@ button {
     margin-bottom: 5px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
 .notaItem span {
@@ -101,12 +104,11 @@ button {
     cursor: pointer;
 }
 
-.excluir {
+.notaItem button {
     background: red;
     color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px;
+    padding: 5px 10px;
+    font-size: 12px;
 }
 
 #editorNota {
@@ -131,13 +133,16 @@ button {
 
 <button id="btnVoltar" onclick="voltarMenu()">⬅ Voltar</button>
 
+<!-- MENU -->
 <div id="menu">
     <button onclick="abrirAgenda()">📅 Horas Diárias</button>
     <button onclick="abrirNotas()">📝 Notas</button>
 </div>
 
+<!-- AGENDA -->
 <div id="agenda"></div>
 
+<!-- NOTAS -->
 <div id="notas">
 
     <div id="topoNotas">
@@ -154,11 +159,12 @@ button {
 
 <script>
 
-// ===== FUNDO =====
+// ===== FUNDOS =====
 function fundo(url) {
     document.body.style.backgroundImage = `url(${url})`;
 }
 
+// ===== VOLTAR =====
 function voltarMenu() {
     menu.style.display = "flex";
     agenda.style.display = "none";
@@ -175,21 +181,32 @@ function abrirAgenda() {
     fundo("https://images.unsplash.com/photo-1506784983877-45594efa4cbe");
 
     agenda.innerHTML = "";
+
     for (let i = 0; i < 24; i++) {
         let hora = String(i).padStart(2, '0') + ":00";
 
         let linha = document.createElement("div");
         linha.className = "linha";
+
         linha.innerHTML = `
             <div class="hora">${hora}</div>
-            <input class="texto">
+            <input class="texto" placeholder="Escreva...">
         `;
+
         agenda.appendChild(linha);
     }
 }
 
 // ===== NOTAS =====
 let notaAtual = null;
+
+function getNotas() {
+    return JSON.parse(localStorage.getItem("notas")) || {};
+}
+
+function salvarNotas(notas) {
+    localStorage.setItem("notas", JSON.stringify(notas));
+}
 
 function abrirNotas() {
     menu.style.display = "none";
@@ -200,19 +217,17 @@ function abrirNotas() {
     carregarNotas();
 }
 
-function getNotas() {
-    return JSON.parse(localStorage.getItem("notas")) || {};
-}
-
-function salvarNotas(notas) {
-    localStorage.setItem("notas", JSON.stringify(notas));
-}
-
 function criarNota() {
     let nome = prompt("Nome da nota:");
     if (!nome) return;
 
     let notas = getNotas();
+
+    if (notas[nome]) {
+        alert("Já existe uma nota com esse nome!");
+        return;
+    }
+
     notas[nome] = "";
     salvarNotas(notas);
 
@@ -223,7 +238,7 @@ function criarNota() {
 }
 
 function carregarNotas() {
-    let lista = document.getElementById("listaNotas");
+    const lista = document.getElementById("listaNotas");
     lista.innerHTML = "";
 
     let notas = getNotas();
@@ -240,20 +255,23 @@ function carregarNotas() {
             editorNota.value = notas[nome];
         };
 
-        let btn = document.createElement("button");
-        btn.innerText = "X";
-        btn.className = "excluir";
+        let excluir = document.createElement("button");
+        excluir.innerText = "X";
 
-        btn.onclick = () => {
+        excluir.onclick = () => {
             delete notas[nome];
             salvarNotas(notas);
+
+            if (notaAtual === nome) {
+                notaAtual = null;
+                editorNota.value = "";
+            }
+
             carregarNotas();
-            editorNota.value = "";
-            notaAtual = null;
         };
 
         div.appendChild(span);
-        div.appendChild(btn);
+        div.appendChild(excluir);
         lista.appendChild(div);
     }
 }
