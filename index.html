@@ -8,14 +8,12 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    transition: background 0.5s;
+    font-family: Arial;
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
 }
 
-/* overlay escuro */
 body::before {
     content: "";
     position: fixed;
@@ -25,24 +23,24 @@ body::before {
     z-index: -1;
 }
 
-/* container */
-.container {
-    padding: 15px;
-}
+.container { padding: 15px; }
 
-/* topo */
-header {
-    text-align: center;
-    color: white;
-}
+header { text-align: center; color: white; }
 
-/* botão voltar */
 #btnVoltar {
     display: none;
     margin: 10px 0;
     width: 100%;
     background: #1e3a8a;
     color: white;
+}
+
+button {
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background: #facc15;
+    font-weight: bold;
 }
 
 /* MENU */
@@ -53,23 +51,12 @@ header {
     margin-top: 40px;
 }
 
-button {
-    padding: 15px;
-    border: none;
-    border-radius: 10px;
-    background: #facc15;
-    font-weight: bold;
-    font-size: 16px;
-}
-
 /* AGENDA */
-#agenda {
-    display: none;
-}
+#agenda { display: none; }
 
 .linha {
     display: flex;
-    background: rgba(255, 249, 196, 0.9);
+    background: rgba(255,249,196,0.9);
     border-bottom: 1px solid #ccc;
 }
 
@@ -87,9 +74,7 @@ button {
 }
 
 /* NOTAS */
-#notas {
-    display: none;
-}
+#notas { display: none; }
 
 #topoNotas {
     display: flex;
@@ -97,39 +82,41 @@ button {
     margin-bottom: 10px;
 }
 
-#topoNotas button {
-    flex: 1;
-}
-
 #listaNotas {
     max-height: 150px;
     overflow-y: auto;
-    margin-bottom: 10px;
 }
 
 .notaItem {
-    background: rgba(224, 242, 254, 0.9);
+    background: rgba(224,242,254,0.9);
     padding: 10px;
     border-radius: 8px;
     margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.notaItem span {
+    flex: 1;
     cursor: pointer;
+}
+
+.excluir {
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px;
 }
 
 #editorNota {
     width: 100%;
     height: 250px;
+    margin-top: 10px;
     border: none;
     border-radius: 10px;
     padding: 10px;
-    background: rgba(255, 249, 196, 0.9);
-}
-
-/* RESPONSIVO */
-@media (min-width: 600px) {
-    .container {
-        max-width: 500px;
-        margin: auto;
-    }
+    background: rgba(255,249,196,0.9);
 }
 </style>
 </head>
@@ -144,126 +131,144 @@ button {
 
 <button id="btnVoltar" onclick="voltarMenu()">⬅ Voltar</button>
 
-<!-- MENU -->
 <div id="menu">
     <button onclick="abrirAgenda()">📅 Horas Diárias</button>
     <button onclick="abrirNotas()">📝 Notas</button>
 </div>
 
-<!-- AGENDA -->
 <div id="agenda"></div>
 
-<!-- NOTAS -->
 <div id="notas">
 
     <div id="topoNotas">
-        <button onclick="salvarNota()">💾 Salvar</button>
-        <button onclick="novaNota()">➕ Nova</button>
+        <button onclick="criarNota()">➕ Nova Nota</button>
     </div>
 
     <div id="listaNotas"></div>
 
-    <textarea id="editorNota" placeholder="Escreva sua nota..."></textarea>
+    <textarea id="editorNota" placeholder="Selecione ou crie uma nota..."></textarea>
+
 </div>
 
 </div>
 
 <script>
 
-// ===== FUNDOS =====
-function fundoMenu() {
-    document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f')";
+// ===== FUNDO =====
+function fundo(url) {
+    document.body.style.backgroundImage = `url(${url})`;
 }
 
-function fundoAgenda() {
-    document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1506784983877-45594efa4cbe')";
-}
-
-function fundoNotas() {
-    document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1517842645767-c639042777db')";
-}
-
-// ===== VOLTAR =====
 function voltarMenu() {
-    document.getElementById("menu").style.display = "flex";
-    document.getElementById("agenda").style.display = "none";
-    document.getElementById("notas").style.display = "none";
-    document.getElementById("btnVoltar").style.display = "none";
-    fundoMenu();
+    menu.style.display = "flex";
+    agenda.style.display = "none";
+    notas.style.display = "none";
+    btnVoltar.style.display = "none";
+    fundo("https://images.unsplash.com/photo-1524995997946-a1c2e315a42f");
 }
 
 // ===== AGENDA =====
 function abrirAgenda() {
-    document.getElementById("menu").style.display = "none";
-    document.getElementById("agenda").style.display = "block";
-    document.getElementById("btnVoltar").style.display = "block";
-    fundoAgenda();
-    gerarAgenda();
-}
+    menu.style.display = "none";
+    agenda.style.display = "block";
+    btnVoltar.style.display = "block";
+    fundo("https://images.unsplash.com/photo-1506784983877-45594efa4cbe");
 
-function gerarAgenda() {
-    const agenda = document.getElementById("agenda");
     agenda.innerHTML = "";
-
     for (let i = 0; i < 24; i++) {
         let hora = String(i).padStart(2, '0') + ":00";
 
         let linha = document.createElement("div");
         linha.className = "linha";
-
         linha.innerHTML = `
             <div class="hora">${hora}</div>
-            <input class="texto" placeholder="Escreva...">
+            <input class="texto">
         `;
-
         agenda.appendChild(linha);
     }
 }
 
 // ===== NOTAS =====
+let notaAtual = null;
+
 function abrirNotas() {
-    document.getElementById("menu").style.display = "none";
-    document.getElementById("notas").style.display = "block";
-    document.getElementById("btnVoltar").style.display = "block";
-    fundoNotas();
+    menu.style.display = "none";
+    notas.style.display = "block";
+    btnVoltar.style.display = "block";
+    fundo("https://images.unsplash.com/photo-1517842645767-c639042777db");
+
     carregarNotas();
 }
 
-function salvarNota() {
+function getNotas() {
+    return JSON.parse(localStorage.getItem("notas")) || {};
+}
+
+function salvarNotas(notas) {
+    localStorage.setItem("notas", JSON.stringify(notas));
+}
+
+function criarNota() {
     let nome = prompt("Nome da nota:");
     if (!nome) return;
 
-    let conteudo = document.getElementById("editorNota").value;
+    let notas = getNotas();
+    notas[nome] = "";
+    salvarNotas(notas);
 
-    localStorage.setItem(nome, conteudo);
+    notaAtual = nome;
+    editorNota.value = "";
+
     carregarNotas();
 }
 
 function carregarNotas() {
-    const lista = document.getElementById("listaNotas");
+    let lista = document.getElementById("listaNotas");
     lista.innerHTML = "";
 
-    for (let i = 0; i < localStorage.length; i++) {
-        let nome = localStorage.key(i);
+    let notas = getNotas();
 
+    for (let nome in notas) {
         let div = document.createElement("div");
         div.className = "notaItem";
-        div.innerText = nome;
 
-        div.onclick = () => {
-            document.getElementById("editorNota").value = localStorage.getItem(nome);
+        let span = document.createElement("span");
+        span.innerText = nome;
+
+        span.onclick = () => {
+            notaAtual = nome;
+            editorNota.value = notas[nome];
         };
 
+        let btn = document.createElement("button");
+        btn.innerText = "X";
+        btn.className = "excluir";
+
+        btn.onclick = () => {
+            delete notas[nome];
+            salvarNotas(notas);
+            carregarNotas();
+            editorNota.value = "";
+            notaAtual = null;
+        };
+
+        div.appendChild(span);
+        div.appendChild(btn);
         lista.appendChild(div);
     }
 }
 
-function novaNota() {
-    document.getElementById("editorNota").value = "";
-}
+// AUTO SAVE
+editorNota.addEventListener("input", () => {
+    if (!notaAtual) return;
 
-// carregar fundo inicial
-fundoMenu();
+    let notas = getNotas();
+    notas[notaAtual] = editorNota.value;
+    salvarNotas(notas);
+});
+
+// iniciar fundo
+fundo("https://images.unsplash.com/photo-1524995997946-a1c2e315a42f");
 
 </script>
 
